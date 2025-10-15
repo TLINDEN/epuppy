@@ -1,9 +1,7 @@
-package epub_test
+package epub
 
 import (
 	"testing"
-
-	"github.com/kapmahc/epub"
 )
 
 func TestEpub(t *testing.T) {
