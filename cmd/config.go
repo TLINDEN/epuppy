@@ -7,20 +7,29 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/alecthomas/repr"
+	"github.com/knadh/koanf/parsers/toml"
+	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/posflag"
 	"github.com/knadh/koanf/v2"
 	flag "github.com/spf13/pflag"
 )
 
 const (
-	Version string = `v0.0.1`
+	Version string = `v0.0.2`
 	Usage   string = `epuppy [-vd] <epub file>`
 )
 
 type Config struct {
-	Showversion     bool `koanf:"version"`        // -v
-	Debug           bool `koanf:"debug"`          // -d
-	StoreProgress   bool `koanf:"store-progress"` // -s
+	Showversion   bool         `koanf:"version"`        // -v
+	Debug         bool         `koanf:"debug"`          // -d
+	StoreProgress bool         `koanf:"store-progress"` // -s
+	Darkmode      bool         `koanf:"dark"`           // -D
+	Config        string       `koanf:"config"`         // -c
+	ColorDark     ColorSetting `koanf:"colordark"`      // comes from config file only
+	ColorLight    ColorSetting `koanf:"colorlight"`     // comes from config file only
+
+	Colors          Colors // generated from user config file or internal defaults, respects dark mode
 	Document        string
 	InitialProgress int // lines
 }
@@ -41,10 +50,39 @@ func InitConfig(output io.Writer) (*Config, error) {
 	// parse commandline flags
 	flagset.BoolP("version", "v", false, "show program version")
 	flagset.BoolP("debug", "d", false, "enable debugging")
+	flagset.BoolP("dark", "D", false, "enable dark mode")
 	flagset.BoolP("store-progress", "s", false, "store reading progress")
+	flagset.StringP("config", "c", "", "read config from file")
 
 	if err := flagset.Parse(os.Args[1:]); err != nil {
 		return nil, fmt.Errorf("failed to parse program arguments: %w", err)
+	}
+
+	// generate a  list of config files to try  to load, including the
+	// one provided via -c, if any
+	var configfiles []string
+
+	configfile, _ := flagset.GetString("config")
+	home, _ := os.UserHomeDir()
+
+	if configfile != "" {
+		configfiles = []string{configfile}
+	} else {
+		configfiles = []string{
+			"/etc/epuppy.toml", "/usr/local/etc/epuppy.toml", // unix variants
+			filepath.Join(home, ".config", "epuppy", "config.toml"),
+		}
+	}
+
+	// Load the config file[s]
+	for _, cfgfile := range configfiles {
+		if path, err := os.Stat(cfgfile); !os.IsNotExist(err) {
+			if !path.IsDir() {
+				if err := kloader.Load(file.Provider(cfgfile), toml.Parser()); err != nil {
+					return nil, fmt.Errorf("error loading config file: %w", err)
+				}
+			}
+		} // else: we ignore the file if it doesn't exists
 	}
 
 	// command line setup
@@ -62,6 +100,24 @@ func InitConfig(output io.Writer) (*Config, error) {
 	if len(flagset.Args()) > 0 {
 		conf.Document = flagset.Args()[0]
 	}
+
+	if conf.Debug {
+		repr.Println(conf)
+	}
+
+	// setup color config
+	conf.Colors = SetColorconfig(
+		ColorSetting{ // Dark
+			Title:   "#ff4500",
+			Chapter: "#ff4500",
+			Body:    "#cdb79e",
+		},
+		ColorSetting{ // Light
+			Title:   "#ff0000",
+			Chapter: "#8b0000",
+			Body:    "#696969",
+		},
+		conf)
 
 	return conf, nil
 }

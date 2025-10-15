@@ -14,6 +14,7 @@ type Book struct {
 	Opf       Opf       `json:"opf"`
 	Container Container `json:"-"`
 	Mimetype  string    `json:"-"`
+	Content   []Content
 
 	fd *zip.ReadCloser
 }
@@ -49,7 +50,12 @@ func (p *Book) readXML(n string, v interface{}) error {
 	}
 	defer fd.Close()
 	dec := xml.NewDecoder(fd)
-	return dec.Decode(v)
+
+	if err := dec.Decode(v); err != nil {
+		return fmt.Errorf("XML decoder error %w", err)
+	}
+
+	return nil
 }
 
 func (p *Book) readBytes(n string) ([]byte, error) {
@@ -59,8 +65,12 @@ func (p *Book) readBytes(n string) ([]byte, error) {
 	}
 	defer fd.Close()
 
-	return io.ReadAll(fd)
+	data, err := io.ReadAll(fd)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read contents from %s %w", n, err)
+	}
 
+	return data, nil
 }
 
 func (p *Book) open(n string) (io.ReadCloser, error) {
@@ -69,5 +79,6 @@ func (p *Book) open(n string) (io.ReadCloser, error) {
 			return f.Open()
 		}
 	}
+
 	return nil, fmt.Errorf("file %s not exist", n)
 }

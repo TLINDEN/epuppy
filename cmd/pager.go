@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -32,11 +34,63 @@ var (
 	viewstyle = lipgloss.NewStyle()
 )
 
+const (
+	MarginStep = 5
+	MinSize    = 40
+)
+
 type Meta struct {
 	lines           int
 	currentline     int
 	initialprogress int
 	document        string
+}
+
+type keyMap struct {
+	Up    key.Binding
+	Down  key.Binding
+	Left  key.Binding
+	Right key.Binding
+	Help  key.Binding
+	Quit  key.Binding
+}
+
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Left, k.Right}, // first column
+		{k.Help, k.Quit},                // second column
+	}
+}
+
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Help, k.Quit}
+}
+
+var keys = keyMap{
+	Up: key.NewBinding(
+		key.WithKeys("up", "k"),
+		key.WithHelp("↑", "move up"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓", "move down"),
+	),
+	Left: key.NewBinding(
+		key.WithKeys("left", "h"),
+		key.WithHelp("←", "decrease text width"),
+	),
+	Right: key.NewBinding(
+		key.WithKeys("right", "l"),
+		key.WithHelp("→", "increase text width"),
+	),
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "toggle help"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q", "esc", "ctrl+c"),
+		key.WithHelp("q", "quit"),
+	),
 }
 
 type Doc struct {
@@ -45,7 +99,14 @@ type Doc struct {
 	ready        bool
 	viewport     viewport.Model
 	initialwidth int
+	lastwidth    int
+	margin       int
+	marginMod    bool
 	meta         *Meta
+	config       *Config
+
+	keys keyMap
+	help help.Model
 }
 
 func (m Doc) Init() tea.Cmd {
@@ -60,8 +121,21 @@ func (m Doc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		switch {
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
+		case key.Matches(msg, m.keys.Left):
+			if m.lastwidth-(m.margin*2) >= MinSize {
+				m.margin += MarginStep
+				m.marginMod = true
+			}
+		case key.Matches(msg, m.keys.Right):
+			if m.margin >= MarginStep {
+				m.margin -= MarginStep
+				m.marginMod = true
+			}
 		}
 
 	case tea.WindowSizeMsg:
@@ -85,15 +159,27 @@ func (m Doc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.viewport.Width = msg.Width
 			m.viewport.Height = msg.Height - verticalMarginHeight
-			m.viewport.SetContent(wordwrap.String(m.content, msg.Width))
 		}
 	}
+
+	m.Rewrap()
 
 	// Handle keyboard and mouse events in the viewport
 	m.viewport, cmd = m.viewport.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+// re-calculate word wrapping, also add left margin
+func (m *Doc) Rewrap() {
+	if m.lastwidth != m.viewport.Width || m.marginMod {
+		m.viewport.SetContent(wordwrap.String(m.content, m.viewport.Width-(m.margin*2)))
+		m.lastwidth = m.viewport.Width
+		m.marginMod = false
+
+		m.viewport.Style = viewstyle.MarginLeft(m.margin)
+	}
 }
 
 func (m Doc) View() string {
@@ -105,17 +191,23 @@ func (m Doc) View() string {
 	// FIXME: doesn't work correctly yet
 	m.meta.currentline = int(float64(m.meta.lines) * m.viewport.ScrollPercent())
 
-	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
+	var helpView string
+	if m.help.ShowAll {
+		helpView = "\n" + m.help.View(m.keys)
+	}
+
+	return fmt.Sprintf("%s\n%s\n%s%s", m.headerView(), m.viewport.View(), m.footerView(), helpView)
 }
 
 func (m Doc) headerView() string {
-	title := titleStyle.Render(m.title)
+	title := m.config.Colors.Title.Render(m.title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
 func (m Doc) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
@@ -148,7 +240,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 	}
 
 	p := tea.NewProgram(
-		Doc{content: message, title: title, initialwidth: width, meta: &meta},
+		Doc{content: message, title: title, initialwidth: width, meta: &meta, config: conf, keys: keys},
 		tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
 		tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
 	)

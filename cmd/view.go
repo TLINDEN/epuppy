@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/tlinden/epuppy/pkg/epub"
@@ -28,12 +29,18 @@ func View(conf *Config) (int, error) {
 		head.WriteString(" ")
 	}
 
-	for _, point := range book.Ncx.Points {
-		if len(point.Content.Body) > 0 {
-			buf.WriteString("### " + point.Content.Title)
+	// FIXME:  since the  switch to  book.Files() in  epub.Open() this
+	// returns invalid chapter numbering
+	chapter := 1
+
+	for _, content := range book.Content {
+		if len(content.Body) > 0 {
+			buf.WriteString(conf.Colors.Chapter.
+				Render(fmt.Sprintf("Chapter %d: %s", chapter, content.Title)))
 			buf.WriteString("\r\n\r\n")
-			buf.WriteString(point.Content.Body)
+			buf.WriteString(conf.Colors.Body.Render(content.Body))
 			buf.WriteString("\r\n\r\n\r\n\r\n")
+			chapter++
 		}
 	}
 

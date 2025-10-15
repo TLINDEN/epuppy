@@ -3,11 +3,11 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
+	"os"
 )
 
 func Die(err error) int {
-	log.Fatal("Error: ", err.Error())
+	fmt.Fprintln(os.Stderr, "Error: ", err.Error())
 
 	return 1
 }

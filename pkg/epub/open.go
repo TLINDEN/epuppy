@@ -2,6 +2,7 @@ package epub
 
 import (
 	"archive/zip"
+	"strings"
 )
 
 // Open open a epub file
@@ -34,19 +35,29 @@ func Open(fn string) (*Book, error) {
 	for _, mf := range bk.Opf.Manifest {
 		if mf.ID == bk.Opf.Spine.Toc {
 			err = bk.readXML(bk.filename(mf.Href), &bk.Ncx)
+			if err != nil {
+				return &bk, err
+			}
+
 			break
 		}
 	}
 
-	for _, ncx := range bk.Ncx.Points {
-		content, err := bk.readBytes(bk.filename(ncx.Content.Src))
+	for _, file := range bk.Files() {
+		content, err := bk.readBytes(file)
 		if err != nil {
 			return &bk, err
 		}
 
-		if err := ncx.Content.String(content); err != nil {
-			return &bk, err
+		ct := Content{Src: file}
+
+		if strings.Contains(string(content), "DOCTYPE") {
+			if err := ct.String(content); err != nil {
+				return &bk, err
+			}
 		}
+
+		bk.Content = append(bk.Content, ct)
 	}
 
 	return &bk, nil

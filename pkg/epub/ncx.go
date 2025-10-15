@@ -1,9 +1,7 @@
 package epub
 
 import (
-	"encoding/xml"
 	"regexp"
-	"strings"
 )
 
 var (
@@ -22,50 +20,10 @@ type Ncx struct {
 
 // NavPoint nav point
 type NavPoint struct {
-	Text    string     `xml:"navLabel>text" json:"text"`
-	Content Content    `xml:"content" json:"content"`
-	Points  []NavPoint `xml:"navPoint" json:"points"`
+	Text   string     `xml:"navLabel>text" json:"text"`
+	Points []NavPoint `xml:"navPoint" json:"points"`
 }
 
 type Title struct {
 	Content string `xml:"head>title"`
-}
-
-// Content nav-point content
-type Content struct {
-	Src   string `xml:"src,attr" json:"src"`
-	Empty bool
-	Body  string
-	Title string
-	XML   []byte
-}
-
-func (c *Content) String(content []byte) error {
-	title := Title{}
-
-	err := xml.Unmarshal(content, &title)
-	if err != nil {
-		if !strings.HasPrefix(err.Error(), "XML syntax error") {
-			return err
-		}
-	}
-
-	c.Title = title.Content
-
-	txt := cleantitle.ReplaceAllString(string(content), "")
-	txt = cleanh1.ReplaceAllString(txt, "")
-	txt = cleanmarkup.ReplaceAllString(txt, "")
-	txt = cleanentities.ReplaceAllString(txt, " ")
-	txt = cleancomments.ReplaceAllString(txt, "")
-
-	txt = strings.TrimSpace(txt)
-
-	c.Body = cleanspace.ReplaceAllString(txt, "")
-	c.XML = content
-
-	if len(c.Body) == 0 {
-		c.Empty = true
-	}
-
-	return nil
 }

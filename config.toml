@@ -1,0 +1,16 @@
+# color setting for dark mode
+colordark = {
+  body = "#ffffff",
+  title = "#7cfc00",
+  chapter = "#ffff00"
+}
+
+# color setting for light mode
+colorlight = {
+  body = "#000000",
+  title = "#8470ff",
+  chapter = "#00008b"
+}
+
+# always use dark mode
+dark = true
