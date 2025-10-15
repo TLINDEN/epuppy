@@ -99,6 +99,9 @@ func InitConfig(output io.Writer) (*Config, error) {
 	// arg is the epub file
 	if len(flagset.Args()) > 0 {
 		conf.Document = flagset.Args()[0]
+	} else {
+		flagset.Usage()
+		os.Exit(1)
 	}
 
 	if conf.Debug {
