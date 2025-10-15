@@ -3,7 +3,17 @@ package epub
 import (
 	"encoding/xml"
 	"fmt"
+	"regexp"
 	"strings"
+)
+
+var (
+	cleantitle    = regexp.MustCompile(`(?s)<head>.*</head>`)
+	cleanmarkup   = regexp.MustCompile(`<[^<>]+>`)
+	cleanentities = regexp.MustCompile(`&.+;`)
+	cleancomments = regexp.MustCompile(`/*.*/`)
+	cleanspace    = regexp.MustCompile(`^\s*`)
+	cleanh1       = regexp.MustCompile(`<h[1-6].*</h[1-6]>`)
 )
 
 // Content nav-point content

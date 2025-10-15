@@ -2,12 +2,32 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/tlinden/epuppy/pkg/epub"
 )
 
 func View(conf *Config) (int, error) {
+	switch filepath.Ext(conf.Document) {
+	case ".epub":
+		return ViewEpub(conf)
+	default:
+		return ViewText(conf)
+	}
+}
+
+func ViewText(conf *Config) (int, error) {
+	data, err := os.ReadFile(conf.Document)
+	if err != nil {
+		return 0, err
+	}
+
+	return Pager(conf, conf.Document, string(data))
+}
+
+func ViewEpub(conf *Config) (int, error) {
 	book, err := epub.Open(conf.Document)
 	if err != nil {
 		return 0, err
@@ -35,8 +55,11 @@ func View(conf *Config) (int, error) {
 
 	for _, content := range book.Content {
 		if len(content.Body) > 0 {
-			buf.WriteString(conf.Colors.Chapter.
-				Render(fmt.Sprintf("Chapter %d: %s", chapter, content.Title)))
+			if content.Title != "" {
+				buf.WriteString(conf.Colors.Chapter.
+					Render(fmt.Sprintf("──────┤ %s ├──────", content.Title)))
+
+			}
 			buf.WriteString("\r\n\r\n")
 			buf.WriteString(conf.Colors.Body.Render(content.Body))
 			buf.WriteString("\r\n\r\n\r\n\r\n")

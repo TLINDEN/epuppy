@@ -189,7 +189,7 @@ func (m Doc) View() string {
 
 	// update current line for later saving
 	// FIXME: doesn't work correctly yet
-	m.meta.currentline = int(float64(m.meta.lines) * m.viewport.ScrollPercent())
+	m.meta.currentline = int(float64(m.viewport.TotalLineCount()) * m.viewport.ScrollPercent())
 
 	var helpView string
 	if m.help.ShowAll {
@@ -234,13 +234,28 @@ func Pager(conf *Config, title, message string) (int, error) {
 		scrollto = conf.InitialProgress
 	}
 
+	if conf.LineNumbers {
+		catn := ""
+		for idx, line := range strings.Split(message, "\n") {
+			catn += fmt.Sprintf("%d: %s\n", idx, line)
+		}
+		message = catn
+	}
+
 	meta := Meta{
 		initialprogress: scrollto,
-		lines:           len(strings.Split(message, "\r\n")),
+		lines:           len(strings.Split(message, "\n")),
 	}
 
 	p := tea.NewProgram(
-		Doc{content: message, title: title, initialwidth: width, meta: &meta, config: conf, keys: keys},
+		Doc{
+			content:      message,
+			title:        title,
+			initialwidth: width,
+			meta:         &meta,
+			config:       conf,
+			keys:         keys,
+		},
 		tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
 		tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
 	)
