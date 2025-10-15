@@ -12,8 +12,8 @@ func TestEpub(t *testing.T) {
 	defer bk.Close()
 }
 
-func open(t *testing.T, f string) (*epub.Book, error) {
-	bk, err := epub.Open(f)
+func open(t *testing.T, f string) (*Book, error) {
+	bk, err := Open(f)
 	if err != nil {
 		return nil, err
 	}

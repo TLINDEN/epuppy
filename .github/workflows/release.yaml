@@ -18,7 +18,7 @@ jobs:
           go-version: 1.24.9
 
       - name: Build the executables
-        run: ./mkrel.sh gfn ${{ github.ref_name}}
+        run: ./mkrel.sh epuppy ${{ github.ref_name}}
 
       - name: List the executables
         run: ls -l ./releases
