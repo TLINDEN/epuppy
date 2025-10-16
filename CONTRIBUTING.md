@@ -2,8 +2,8 @@
 
 The idea behind this  project is to build a small TUI  tool to be able
 to just take a look into some  epub file without the need to leave the
-shell. And  it had to be  fast enough to  just peak into an  ebook. It
-should be small, fast and easy to understand.
+shell. It has to be fast enough  to just peak into an ebook and should
+be small and easy to understand.
 
 There will be no GUI, no web interface, no public API of some sort, no
 builtin interpreter.  It is not intended  to build a full  blown ebook
