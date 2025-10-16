@@ -34,11 +34,6 @@ func (p *Book) Files() []string {
 	return fns
 }
 
-// Close close file reader
-func (p *Book) Close() error {
-	return p.fd.Close()
-}
-
 // -----------------------------------------------------------------------------
 func (p *Book) filename(n string) string {
 	return path.Join(path.Dir(p.Container.Rootfile.Path), n)

@@ -55,8 +55,7 @@ func Open(fn string) (*Book, error) {
 		}
 
 		ct := Content{Src: file}
-
-		if strings.Contains(string(content), "DOCTYPE") {
+		if strings.Contains(string(content), "<?xml") {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}

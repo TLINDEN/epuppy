@@ -14,6 +14,7 @@ var (
 	cleancomments = regexp.MustCompile(`/*.*/`)
 	cleanspace    = regexp.MustCompile(`^\s*`)
 	cleanh1       = regexp.MustCompile(`<h[1-6].*</h[1-6]>`)
+	paragraph     = regexp.MustCompile(`</p>`)
 )
 
 // Content nav-point content
@@ -39,12 +40,12 @@ func (c *Content) String(content []byte) error {
 
 	txt := cleantitle.ReplaceAllString(string(content), "")
 	txt = cleanh1.ReplaceAllString(txt, "")
+	txt = paragraph.ReplaceAllString(txt, "\n")
 	txt = cleanmarkup.ReplaceAllString(txt, "")
 	txt = cleanentities.ReplaceAllString(txt, " ")
 	txt = cleancomments.ReplaceAllString(txt, "")
-	txt = strings.TrimSpace(txt)
 
-	c.Body = cleanspace.ReplaceAllString(txt, "")
+	c.Body = strings.TrimSpace(txt)
 	c.XML = content
 
 	if len(c.Body) == 0 {
