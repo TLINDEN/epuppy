@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -30,7 +31,11 @@ func StoreProgress(conf *Config, progress int) error {
 	if err != nil {
 		return fmt.Errorf("failed to open state file %s: %w", filename, err)
 	}
-	defer fd.Close()
+	defer func() {
+		if err := fd.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	if err := fd.Truncate(0); err != nil {
 		return fmt.Errorf("failed to truncate state file %s: %w", filename, err)
@@ -53,7 +58,11 @@ func GetProgress(conf *Config) (int64, error) {
 	if err != nil {
 		return 0, nil // ignore errors and return no progress
 	}
-	defer fd.Close()
+	defer func() {
+		if err := fd.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	scanner := bufio.NewScanner(fd)
 	var line string
