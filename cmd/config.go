@@ -21,9 +21,10 @@ const (
 
 Options:
 -D --dark                enable dark mode
--s --store-progress      store and use previous (experimental)
+-s --store-progress      remember reading position
 -n --line-numbers        add line numbers
 -c --config <file>       use config <file>
+-t --txt                 dump readable content to STDOUT
 -d --debug               enable debugging
 -h --help                show help message
 -v --version             show program version
@@ -36,6 +37,7 @@ type Config struct {
 	StoreProgress bool         `koanf:"store-progress"` // -s
 	Darkmode      bool         `koanf:"dark"`           // -D
 	LineNumbers   bool         `koanf:"line-numbers"`   // -n
+	Dump          bool         `koanf:"txt"`            // -t
 	Config        string       `koanf:"config"`         // -c
 	ColorDark     ColorSetting `koanf:"colordark"`      // comes from config file only
 	ColorLight    ColorSetting `koanf:"colorlight"`     // comes from config file only
@@ -64,6 +66,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.BoolP("dark", "D", false, "enable dark mode")
 	flagset.BoolP("store-progress", "s", false, "store reading progress")
 	flagset.BoolP("line-numbers", "n", false, "add line numbers")
+	flagset.BoolP("txt", "t", false, "dump readable content to STDOUT")
 	flagset.StringP("config", "c", "", "read config from file")
 
 	if err := flagset.Parse(os.Args[1:]); err != nil {
