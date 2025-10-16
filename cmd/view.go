@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,7 +37,12 @@ func ViewEpub(conf *Config) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer book.Close()
+
+	defer func() {
+		if err := book.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	buf := strings.Builder{}
 	head := strings.Builder{}

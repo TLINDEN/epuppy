@@ -36,7 +36,7 @@ func StoreProgress(conf *Config, progress int) error {
 		return fmt.Errorf("failed to truncate state file %s: %w", filename, err)
 	}
 
-	_, err = fd.WriteString(fmt.Sprintf("%d\n", progress))
+	_, err = fmt.Fprintf(fd, "%d\n", progress)
 	if err != nil {
 		return fmt.Errorf("failed to write to state file %s: %w", filename, err)
 	}

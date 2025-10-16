@@ -2,6 +2,7 @@ package epub
 
 import (
 	"archive/zip"
+	"log"
 	"strings"
 )
 
@@ -12,7 +13,11 @@ func Open(fn string) (*Book, error) {
 		return nil, err
 	}
 
-	defer fd.Close()
+	defer func() {
+		if err := fd.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	bk := Book{fd: fd}
 	mt, err := bk.readBytes("mimetype")

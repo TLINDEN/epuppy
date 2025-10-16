@@ -27,8 +27,7 @@ Options:
 -t --txt                 dump readable content to STDOUT
 -d --debug               enable debugging
 -h --help                show help message
--v --version             show program version
-`
+-v --version             show program version`
 )
 
 type Config struct {

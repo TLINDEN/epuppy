@@ -43,7 +43,6 @@ type Meta struct {
 	lines           int
 	currentline     int
 	initialprogress int
-	document        string
 }
 
 type keyMap struct {
@@ -278,7 +277,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 	)
 
 	if _, err := p.Run(); err != nil {
-		return 0, fmt.Errorf("could not run pager:", err)
+		return 0, fmt.Errorf("could not run pager: %w", err)
 	}
 
 	if conf.Debug {
