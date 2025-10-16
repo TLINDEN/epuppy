@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,16 +32,10 @@ func ViewText(conf *Config) (int, error) {
 }
 
 func ViewEpub(conf *Config) (int, error) {
-	book, err := epub.Open(conf.Document)
+	book, err := epub.Open(conf.Document, conf.XML)
 	if err != nil {
 		return 0, err
 	}
-
-	defer func() {
-		if err := book.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	buf := strings.Builder{}
 	head := strings.Builder{}
@@ -59,9 +52,20 @@ func ViewEpub(conf *Config) (int, error) {
 		head.WriteString(" ")
 	}
 
-	// FIXME:  since the  switch to  book.Files() in  epub.Open() this
-	// returns invalid chapter numbering
+	fetchByContent(conf, &buf, book)
+
+	if conf.Dump {
+		return fmt.Println(buf.String())
+	}
+
+	return Pager(conf, head.String(), buf.String())
+}
+
+// FIXME:  since the  switch to  book.Files() in  epub.Open() this
+// returns invalid chapter numbering
+func fetchByContent(conf *Config, buf *strings.Builder, book *epub.Book) bool {
 	chapter := 1
+	var gotbody bool
 
 	for _, content := range book.Content {
 		if len(content.Body) > 0 {
@@ -81,13 +85,10 @@ func ViewEpub(conf *Config) (int, error) {
 
 			buf.WriteString("\r\n\r\n\r\n\r\n")
 			chapter++
+
+			gotbody = true
 		}
-
 	}
 
-	if conf.Dump {
-		return fmt.Println(buf.String())
-	}
-
-	return Pager(conf, head.String(), buf.String())
+	return gotbody
 }

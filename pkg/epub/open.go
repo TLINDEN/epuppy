@@ -2,12 +2,14 @@ package epub
 
 import (
 	"archive/zip"
+	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
 // Open open a epub file
-func Open(fn string) (*Book, error) {
+func Open(fn string, dumpxml bool) (*Book, error) {
 	fd, err := zip.OpenReader(fn)
 	if err != nil {
 		return nil, err
@@ -55,14 +57,21 @@ func Open(fn string) (*Book, error) {
 		}
 
 		ct := Content{Src: file}
-
-		if strings.Contains(string(content), "DOCTYPE") {
+		if strings.Contains(string(content), "<?xml") {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}
 		}
 
 		bk.Content = append(bk.Content, ct)
+
+		if dumpxml {
+			fmt.Println(string(ct.XML))
+		}
+	}
+
+	if dumpxml {
+		os.Exit(0)
 	}
 
 	return &bk, nil
