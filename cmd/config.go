@@ -114,8 +114,9 @@ func InitConfig(output io.Writer) (*Config, error) {
 	if len(flagset.Args()) > 0 {
 		conf.Document = flagset.Args()[0]
 	} else {
-		flagset.Usage()
-		os.Exit(1)
+		if !conf.Showversion {
+			flagset.Usage()
+		}
 	}
 
 	if conf.Debug {
