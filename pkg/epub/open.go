@@ -9,7 +9,7 @@ import (
 )
 
 // Open open a epub file
-func Open(fn string) (*Book, error) {
+func Open(fn string, dumpxml bool) (*Book, error) {
 	fd, err := zip.OpenReader(fn)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,6 @@ func Open(fn string) (*Book, error) {
 		}
 	}
 
-	dump := os.Getenv("DUMPXML")
-
 	for _, file := range bk.Files() {
 		content, err := bk.readBytes(file)
 		if err != nil {
@@ -67,12 +65,12 @@ func Open(fn string) (*Book, error) {
 
 		bk.Content = append(bk.Content, ct)
 
-		if dump != "" {
+		if dumpxml {
 			fmt.Println(string(ct.XML))
 		}
 	}
 
-	if dump != "" {
+	if dumpxml {
 		os.Exit(0)
 	}
 

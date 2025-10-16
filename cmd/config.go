@@ -140,12 +140,6 @@ func InitConfig(output io.Writer) (*Config, error) {
 		},
 		conf)
 
-	if conf.XML {
-		if err := os.Setenv("DUMPXML", "1"); err != nil {
-			return conf, fmt.Errorf("failed to signal xml dump via ENV: %w", err)
-		}
-	}
-
 	return conf, nil
 }
 

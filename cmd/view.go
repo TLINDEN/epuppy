@@ -32,7 +32,7 @@ func ViewText(conf *Config) (int, error) {
 }
 
 func ViewEpub(conf *Config) (int, error) {
-	book, err := epub.Open(conf.Document)
+	book, err := epub.Open(conf.Document, conf.XML)
 	if err != nil {
 		return 0, err
 	}

@@ -16,8 +16,7 @@ type Book struct {
 	Container Container `json:"-"`
 	Mimetype  string    `json:"-"`
 	Content   []Content
-
-	fd *zip.ReadCloser
+	fd        *zip.ReadCloser
 }
 
 // Open open resource file
