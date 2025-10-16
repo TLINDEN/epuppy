@@ -2,7 +2,9 @@ package epub
 
 import (
 	"archive/zip"
+	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -48,6 +50,8 @@ func Open(fn string) (*Book, error) {
 		}
 	}
 
+	dump := os.Getenv("DUMPXML")
+
 	for _, file := range bk.Files() {
 		content, err := bk.readBytes(file)
 		if err != nil {
@@ -62,6 +66,14 @@ func Open(fn string) (*Book, error) {
 		}
 
 		bk.Content = append(bk.Content, ct)
+
+		if dump != "" {
+			fmt.Println(string(ct.XML))
+		}
+	}
+
+	if dump != "" {
+		os.Exit(0)
 	}
 
 	return &bk, nil
