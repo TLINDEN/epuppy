@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"log"
 	"path"
 )
 
@@ -34,8 +35,8 @@ func (p *Book) Files() []string {
 }
 
 // Close close file reader
-func (p *Book) Close() {
-	p.fd.Close()
+func (p *Book) Close() error {
+	return p.fd.Close()
 }
 
 // -----------------------------------------------------------------------------
@@ -48,7 +49,13 @@ func (p *Book) readXML(n string, v interface{}) error {
 	if err != nil {
 		return nil
 	}
-	defer fd.Close()
+
+	defer func() {
+		if err := fd.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	dec := xml.NewDecoder(fd)
 
 	if err := dec.Decode(v); err != nil {
@@ -63,7 +70,11 @@ func (p *Book) readBytes(n string) ([]byte, error) {
 	if err != nil {
 		return nil, nil
 	}
-	defer fd.Close()
+	defer func() {
+		if err := fd.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	data, err := io.ReadAll(fd)
 	if err != nil {

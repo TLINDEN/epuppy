@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,10 @@ func ViewText(conf *Config) (int, error) {
 		return 0, err
 	}
 
+	if conf.Dump {
+		return fmt.Println(string(data))
+	}
+
 	return Pager(conf, conf.Document, string(data))
 }
 
@@ -32,7 +37,12 @@ func ViewEpub(conf *Config) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer book.Close()
+
+	defer func() {
+		if err := book.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	buf := strings.Builder{}
 	head := strings.Builder{}
@@ -61,10 +71,22 @@ func ViewEpub(conf *Config) (int, error) {
 
 			}
 			buf.WriteString("\r\n\r\n")
-			buf.WriteString(conf.Colors.Body.Render(content.Body))
+
+			if conf.Dump {
+				// avoid excess whitespaces when printing to stdout
+				buf.WriteString(content.Body)
+			} else {
+				buf.WriteString(conf.Colors.Body.Render(content.Body))
+			}
+
 			buf.WriteString("\r\n\r\n\r\n\r\n")
 			chapter++
 		}
+
+	}
+
+	if conf.Dump {
+		return fmt.Println(buf.String())
 	}
 
 	return Pager(conf, head.String(), buf.String())

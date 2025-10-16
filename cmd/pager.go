@@ -43,7 +43,6 @@ type Meta struct {
 	lines           int
 	currentline     int
 	initialprogress int
-	document        string
 }
 
 type keyMap struct {
@@ -152,9 +151,7 @@ func (m Doc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
 
-			m.viewport.SetContent(wordwrap.String(m.content, m.initialwidth))
-			m.viewport.ScrollDown(m.meta.initialprogress)
-
+			m.Rewrap()
 			m.ready = true
 		} else {
 			m.viewport.Width = msg.Width
@@ -171,14 +168,34 @@ func (m Doc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// re-calculate word wrapping, also add left margin
+// re-calculate word wrapping, add left margin, recalculate line count
 func (m *Doc) Rewrap() {
+	var content string
+
+	// width has changed, either  because the terminal size changed or
+	// because the user added some margin
 	if m.lastwidth != m.viewport.Width || m.marginMod {
-		m.viewport.SetContent(wordwrap.String(m.content, m.viewport.Width-(m.margin*2)))
+		content = wordwrap.String(m.content, m.viewport.Width-(m.margin*2))
 		m.lastwidth = m.viewport.Width
 		m.marginMod = false
 
 		m.viewport.Style = viewstyle.MarginLeft(m.margin)
+	}
+
+	// bootstrapping, initialize with default width
+	if !m.ready {
+		content = wordwrap.String(m.content, m.initialwidth)
+	}
+
+	// wrapping has changed, update viewport and line count
+	if content != "" {
+		m.viewport.SetContent(content)
+		m.meta.lines = len(strings.Split(content, "\n"))
+	}
+
+	// during bootstrapping: jump to last remembered position, if any
+	if !m.ready {
+		m.viewport.ScrollDown(m.meta.initialprogress)
 	}
 }
 
@@ -188,8 +205,7 @@ func (m Doc) View() string {
 	}
 
 	// update current line for later saving
-	// FIXME: doesn't work correctly yet
-	m.meta.currentline = int(float64(m.viewport.TotalLineCount()) * m.viewport.ScrollPercent())
+	m.meta.currentline = int(float64(m.meta.lines) * m.viewport.ScrollPercent())
 
 	var helpView string
 	if m.help.ShowAll {
@@ -261,7 +277,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 	)
 
 	if _, err := p.Run(); err != nil {
-		return 0, fmt.Errorf("could not run pager:", err)
+		return 0, fmt.Errorf("could not run pager: %w", err)
 	}
 
 	if conf.Debug {
