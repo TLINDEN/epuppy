@@ -1,13 +1,13 @@
 ## Project Goals
 
-The goal of this  project is to build a small tool  which helps in day
-to day  work with tabular  output of various commandline  programs. It
-should be small,  fast and easy to understand. The  idea is to replace
-multiline  shell  pipes  using  awk,   sed  and  grep  with  just  one
-binary.
+The idea behind this  project is to build a small TUI  tool to be able
+to just take a look into some  epub file without the need to leave the
+shell. And  it had to be  fast enough to  just peak into an  ebook. It
+should be small, fast and easy to understand.
 
 There will be no GUI, no web interface, no public API of some sort, no
-builtin interpreter.
+builtin interpreter.  It is not intended  to build a full  blown ebook
+reader.
 
 The  programming  language  used  for  this  project  will  always  be
 [GOLANG](https://go.dev/)  with  the  exception of  the  documentation
