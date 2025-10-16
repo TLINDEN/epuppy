@@ -12,7 +12,7 @@ func TestEpub(t *testing.T) {
 }
 
 func open(t *testing.T, f string) (*Book, error) {
-	bk, err := Open(f)
+	bk, err := Open(f, false)
 	if err != nil {
 		return nil, err
 	}
