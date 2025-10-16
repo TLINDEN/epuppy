@@ -21,20 +21,24 @@ func StoreProgress(conf *Config, progress int) error {
 	cfgpath := conf.GetConfigDir()
 
 	if err := Mkdir(cfgpath); err != nil {
-		return err
+		return fmt.Errorf("failed to mkdir config path %s: %w", cfgpath, err)
 	}
 
 	filename := filepath.Join(cfgpath, Slug(conf.Document))
 
 	fd, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open state file %s: %w", filename, err)
 	}
 	defer fd.Close()
 
+	if err := fd.Truncate(0); err != nil {
+		return fmt.Errorf("failed to truncate state file %s: %w", filename, err)
+	}
+
 	_, err = fd.WriteString(fmt.Sprintf("%d\n", progress))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write to state file %s: %w", filename, err)
 	}
 
 	return nil

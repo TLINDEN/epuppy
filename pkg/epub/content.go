@@ -42,7 +42,6 @@ func (c *Content) String(content []byte) error {
 	txt = cleanmarkup.ReplaceAllString(txt, "")
 	txt = cleanentities.ReplaceAllString(txt, " ")
 	txt = cleancomments.ReplaceAllString(txt, "")
-
 	txt = strings.TrimSpace(txt)
 
 	c.Body = cleanspace.ReplaceAllString(txt, "")
