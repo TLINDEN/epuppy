@@ -1,20 +1,16 @@
 package epub
 
 import (
-	"encoding/xml"
-	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/antchfx/xmlquery"
 )
 
 var (
-	cleantitle    = regexp.MustCompile(`(?s)<head>.*</head>`)
-	cleanmarkup   = regexp.MustCompile(`<[^<>]+>`)
-	cleanentities = regexp.MustCompile(`&.+;`)
-	cleancomments = regexp.MustCompile(`/*.*/`)
-	cleanspace    = regexp.MustCompile(`^\s*`)
-	cleanh1       = regexp.MustCompile(`<h[1-6].*</h[1-6]>`)
-	paragraph     = regexp.MustCompile(`</p>`)
+	cleanentitles = regexp.MustCompile(`&.+;`)
+	empty         = regexp.MustCompile(`(?s)^[\s ]*$`)
+	newlines      = regexp.MustCompile(`[\r\n]+`)
 )
 
 // Content nav-point content
@@ -27,25 +23,30 @@ type Content struct {
 }
 
 func (c *Content) String(content []byte) error {
-	title := Title{}
-
-	err := xml.Unmarshal(content, &title)
+	// parse XML, look for title and <p>.*</p> stuff
+	doc, err := xmlquery.Parse(
+		strings.NewReader(
+			cleanentitles.ReplaceAllString(string(content), " ")))
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), "XML syntax error") {
-			return fmt.Errorf("XML parser error %w", err)
+		panic(err)
+	}
+
+	// extract the title
+	for _, item := range xmlquery.Find(doc, "//title") {
+		c.Title = strings.TrimSpace(item.InnerText())
+	}
+
+	// extract all  paragraphs, ignore any formatting  and re-fill the
+	// paragraph,  that is, we  replaces all newlines inside  with one
+	// space.
+	txt := strings.Builder{}
+	for _, item := range xmlquery.Find(doc, "//p") {
+		if !empty.MatchString(item.InnerText()) {
+			txt.WriteString(newlines.ReplaceAllString(item.InnerText(), " ") + "\n\n")
 		}
 	}
 
-	c.Title = strings.TrimSpace(title.Content)
-
-	txt := cleantitle.ReplaceAllString(string(content), "")
-	txt = cleanh1.ReplaceAllString(txt, "")
-	txt = paragraph.ReplaceAllString(txt, "\n")
-	txt = cleanmarkup.ReplaceAllString(txt, "")
-	txt = cleanentities.ReplaceAllString(txt, " ")
-	txt = cleancomments.ReplaceAllString(txt, "")
-
-	c.Body = strings.TrimSpace(txt)
+	c.Body = strings.TrimSpace(txt.String())
 	c.XML = content
 
 	if len(c.Body) == 0 {
