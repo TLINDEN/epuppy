@@ -6,6 +6,13 @@ may not work for all EPUB files yet. It uses a modified version of the
 unmaintained but the best I could find to parse EPUBs. Find it in the
 `pkg/epub/` directory.
 
+The idea behind this tool is to be able to just take a look into some
+epub file without the need to leave the shell. And it had to be fast
+enough to just peak into an ebook. However, it is possible to actually
+read epub ebooks with epuppy but I'd encourage you to buy a hardware
+ebook reader with an e-ink display. It's better for your eyes in the
+long run.
+
 ## Screenshots
 
 - Viewing an ebook in dark mode
