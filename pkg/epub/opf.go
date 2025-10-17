@@ -1,13 +1,13 @@
 package epub
 
-//Opf content.opf
+// Opf content.opf
 type Opf struct {
 	Metadata Metadata   `xml:"metadata" json:"metadata"`
 	Manifest []Manifest `xml:"manifest>item" json:"manifest"`
 	Spine    Spine      `xml:"spine" json:"spine"`
 }
 
-//Metadata metadata
+// Metadata metadata
 type Metadata struct {
 	Title       []string     `xml:"title" json:"title"`
 	Language    []string     `xml:"language" json:"language"`
@@ -53,7 +53,7 @@ type Metafield struct {
 	Content string `xml:"content,attr" json:"content"`
 }
 
-//Manifest manifest
+// Manifest manifest
 type Manifest struct {
 	ID           string `xml:"id,attr" json:"id"`
 	Href         string `xml:"href,attr" json:"href"`
