@@ -43,6 +43,15 @@ func Execute(output io.Writer) int {
 		return 0
 	}
 
+	if conf.ShowHelp {
+		_, err := fmt.Fprintf(output, Usage)
+		if err != nil {
+			return Die(fmt.Errorf("failed to print to output: %s", err))
+		}
+
+		return 0
+	}
+
 	if conf.StoreProgress {
 		progress, err := GetProgress(conf)
 		if err == nil {
