@@ -21,9 +21,29 @@ jobs:
     - name: build
       run: go build
 
+  test:
+    strategy:
+      matrix:
+        version: [1.24.9]
+        os: [ubuntu-latest]
+    name: Test
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set up Go ${{ matrix.os }}
+      uses: actions/setup-go@v6
+      with:
+        go-version: '${{ matrix.version }}'
+      id: go
+
+    - name: checkout
+      uses: actions/checkout@v5
+
+    - name: test
+      run: go test -cover ./...
+      
 
   golangci:
-    name: lint
+    name: Lintercheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v6

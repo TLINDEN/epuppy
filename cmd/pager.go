@@ -1,3 +1,19 @@
+/*
+Copyright © 2025 Thomas von Dein
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 package cmd
 
 // pager setup using bubbletea
@@ -46,18 +62,22 @@ type Meta struct {
 }
 
 type keyMap struct {
-	Up    key.Binding
-	Down  key.Binding
-	Left  key.Binding
-	Right key.Binding
-	Help  key.Binding
-	Quit  key.Binding
+	Up       key.Binding
+	Down     key.Binding
+	Left     key.Binding
+	Right    key.Binding
+	Help     key.Binding
+	Quit     key.Binding
+	ToggleUI key.Binding
+	Pad      key.Binding
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right}, // first column
-		{k.Help, k.Quit},                // second column
+		// every item is one column
+		{k.Up, k.Down, k.Left, k.Right},
+		{k.Pad}, // fake key, we use it as spacing between columns
+		{k.Help, k.Quit, k.ToggleUI},
 	}
 }
 
@@ -66,6 +86,10 @@ func (k keyMap) ShortHelp() []key.Binding {
 }
 
 var keys = keyMap{
+	Pad: key.NewBinding(
+		key.WithKeys("__"),
+		key.WithHelp("  ", ""),
+	),
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
 		key.WithHelp("↑", "move up"),
@@ -75,11 +99,11 @@ var keys = keyMap{
 		key.WithHelp("↓", "move down"),
 	),
 	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
+		key.WithKeys("left"),
 		key.WithHelp("←", "decrease text width"),
 	),
 	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
+		key.WithKeys("right"),
 		key.WithHelp("→", "increase text width"),
 	),
 	Help: key.NewBinding(
@@ -89,6 +113,10 @@ var keys = keyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "quit"),
+	),
+	ToggleUI: key.NewBinding(
+		key.WithKeys("h"),
+		key.WithHelp("h", "toggle ui"),
 	),
 }
 
@@ -101,6 +129,7 @@ type Doc struct {
 	lastwidth    int
 	margin       int
 	marginMod    bool
+	hideUi       bool
 	meta         *Meta
 	config       *Config
 
@@ -135,6 +164,8 @@ func (m Doc) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.margin -= MarginStep
 				m.marginMod = true
 			}
+		case key.Matches(msg, m.keys.ToggleUI):
+			m.hideUi = !m.hideUi
 		}
 
 	case tea.WindowSizeMsg:
@@ -212,6 +243,10 @@ func (m Doc) View() string {
 		helpView = "\n" + m.help.View(m.keys)
 	}
 
+	if m.hideUi {
+		return fmt.Sprintf("%s\n%s", m.viewport.View(), helpView)
+	}
+
 	return fmt.Sprintf("%s\n%s\n%s%s", m.headerView(), m.viewport.View(), m.footerView(), helpView)
 }
 
@@ -253,7 +288,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 	if conf.LineNumbers {
 		catn := ""
 		for idx, line := range strings.Split(message, "\n") {
-			catn += fmt.Sprintf("%d: %s\n", idx, line)
+			catn += fmt.Sprintf("%4d: %s\n", idx, line)
 		}
 		message = catn
 	}

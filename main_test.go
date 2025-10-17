@@ -14,18 +14,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
+
 package main
 
 import (
-	"os"
+	"testing"
 
-	"github.com/tlinden/epuppy/cmd"
+	"github.com/rogpeppe/go-internal/testscript"
 )
 
-func main() {
-	os.Exit(Main())
+// see https://bitfieldconsulting.com/golang/test-scripts
+
+func TestMain(m *testing.M) {
+	testscript.Main(m, map[string]func(){
+		"epuppy": main,
+	})
 }
 
-func Main() int {
-	return cmd.Execute(os.Stdout)
+func TestEpuppy(t *testing.T) {
+	testscript.Run(t, testscript.Params{
+		Dir: "t",
+	})
 }

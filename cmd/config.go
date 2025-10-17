@@ -1,3 +1,19 @@
+/*
+Copyright © 2025 Thomas von Dein
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 package cmd
 
 import (
@@ -16,8 +32,10 @@ import (
 )
 
 const (
-	Version string = `v0.0.3`
-	Usage   string = `Usage epuppy [options] <epub file>
+	Version string = `v0.0.4`
+	Usage   string = `This is epuppy, a terminal ui ebook viewer.
+
+Usage: epuppy [options] <epub file>
 
 Options:
 -D --dark                enable dark mode
@@ -26,24 +44,26 @@ Options:
 -c --config <file>       use config <file>
 -t --txt                 dump readable content to STDOUT
 -x --xml                 dump source xml to STDOUT
+-N --no-color            disable colors (or use $NO_COLOR env var)
 -d --debug               enable debugging
 -h --help                show help message
 -v --version             show program version`
 )
 
 type Config struct {
-	Showversion   bool         `koanf:"version"`        // -v
-	Debug         bool         `koanf:"debug"`          // -d
-	StoreProgress bool         `koanf:"store-progress"` // -s
-	Darkmode      bool         `koanf:"dark"`           // -D
-	LineNumbers   bool         `koanf:"line-numbers"`   // -n
-	Dump          bool         `koanf:"txt"`            // -t
-	XML           bool         `koanf:"xml"`            // -x
-	Config        string       `koanf:"config"`         // -c
-	ColorDark     ColorSetting `koanf:"colordark"`      // comes from config file only
-	ColorLight    ColorSetting `koanf:"colorlight"`     // comes from config file only
-
-	Colors          Colors // generated from user config file or internal defaults, respects dark mode
+	Showversion     bool         `koanf:"version"`        // -v
+	Debug           bool         `koanf:"debug"`          // -d
+	StoreProgress   bool         `koanf:"store-progress"` // -s
+	Darkmode        bool         `koanf:"dark"`           // -D
+	LineNumbers     bool         `koanf:"line-numbers"`   // -n
+	Dump            bool         `koanf:"txt"`            // -t
+	XML             bool         `koanf:"xml"`            // -x
+	NoColor         bool         `koanf:"no-color"`       // -n
+	Config          string       `koanf:"config"`         // -c
+	ColorDark       ColorSetting `koanf:"colordark"`      // comes from config file only
+	ColorLight      ColorSetting `koanf:"colorlight"`     // comes from config file only
+	ShowHelp        bool         `koanf:"help"`
+	Colors          Colors       // generated from user config file or internal defaults, respects dark mode
 	Document        string
 	InitialProgress int // lines
 }
@@ -58,7 +78,6 @@ func InitConfig(output io.Writer) (*Config, error) {
 		if err != nil {
 			log.Fatalf("failed to print to output: %s", err)
 		}
-		os.Exit(0)
 	}
 
 	// parse commandline flags
@@ -69,6 +88,8 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.BoolP("line-numbers", "n", false, "add line numbers")
 	flagset.BoolP("txt", "t", false, "dump readable content to STDOUT")
 	flagset.BoolP("xml", "x", false, "dump xml to STDOUT")
+	flagset.BoolP("no-color", "N", false, "disable colors")
+	flagset.BoolP("help", "h", false, "show help")
 	flagset.StringP("config", "c", "", "read config from file")
 
 	if err := flagset.Parse(os.Args[1:]); err != nil {
@@ -117,8 +138,9 @@ func InitConfig(output io.Writer) (*Config, error) {
 	if len(flagset.Args()) > 0 {
 		conf.Document = flagset.Args()[0]
 	} else {
-		if !conf.Showversion {
+		if !conf.Showversion && !conf.ShowHelp {
 			flagset.Usage()
+			os.Exit(1)
 		}
 	}
 
@@ -139,6 +161,11 @@ func InitConfig(output io.Writer) (*Config, error) {
 			Body:    "#696969",
 		},
 		conf)
+
+	// disable colors if requested by command line
+	if conf.NoColor {
+		_ = os.Setenv("NO_COLOR", "1")
+	}
 
 	return conf, nil
 }
