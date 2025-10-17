@@ -1,0 +1,7 @@
+# no args shall fail
+! exec epuppy
+
+# help
+exec epuppy -h
+stdout 'This is epuppy'
+
