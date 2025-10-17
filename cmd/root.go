@@ -44,7 +44,7 @@ func Execute(output io.Writer) int {
 	}
 
 	if conf.ShowHelp {
-		_, err := fmt.Fprintf(output, Usage)
+		_, err := fmt.Fprintln(output, Usage)
 		if err != nil {
 			return Die(fmt.Errorf("failed to print to output: %s", err))
 		}

@@ -26,7 +26,7 @@ jobs:
       matrix:
         version: [1.24.9]
         os: [ubuntu-latest]
-    name: Build
+    name: Test
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Go ${{ matrix.os }}
@@ -43,7 +43,7 @@ jobs:
       
 
   golangci:
-    name: lint
+    name: Lintercheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v6
