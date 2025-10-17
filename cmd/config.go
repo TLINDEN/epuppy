@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version string = `v0.0.3`
+	Version string = `v0.0.4`
 	Usage   string = `Usage epuppy [options] <epub file>
 
 Options:
