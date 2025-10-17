@@ -1,3 +1,8 @@
+[![Actions](https://github.com/tlinden/epuppy/actions/workflows/ci.yaml/badge.svg)](https://github.com/tlinden/epuppy/actions)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/tlinden/epuppy/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tlinden/epuppy)](https://goreportcard.com/report/github.com/tlinden/epuppy)
+
+
 # epuppy - terminal epub reader
 
 This is a little TUI epub ebook reader. This is a work in progress and
