@@ -26,6 +26,7 @@ Options:
 -c --config <file>       use config <file>
 -t --txt                 dump readable content to STDOUT
 -x --xml                 dump source xml to STDOUT
+-N --no-color            disable colors (or use $NO_COLOR env var)
 -d --debug               enable debugging
 -h --help                show help message
 -v --version             show program version`
@@ -39,6 +40,7 @@ type Config struct {
 	LineNumbers   bool         `koanf:"line-numbers"`   // -n
 	Dump          bool         `koanf:"txt"`            // -t
 	XML           bool         `koanf:"xml"`            // -x
+	NoColor       bool         `koanf:"no-color"`       // -n
 	Config        string       `koanf:"config"`         // -c
 	ColorDark     ColorSetting `koanf:"colordark"`      // comes from config file only
 	ColorLight    ColorSetting `koanf:"colorlight"`     // comes from config file only
@@ -69,6 +71,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.BoolP("line-numbers", "n", false, "add line numbers")
 	flagset.BoolP("txt", "t", false, "dump readable content to STDOUT")
 	flagset.BoolP("xml", "x", false, "dump xml to STDOUT")
+	flagset.BoolP("no-color", "N", false, "disable colors")
 	flagset.StringP("config", "c", "", "read config from file")
 
 	if err := flagset.Parse(os.Args[1:]); err != nil {
@@ -139,6 +142,11 @@ func InitConfig(output io.Writer) (*Config, error) {
 			Body:    "#696969",
 		},
 		conf)
+
+	// disable colors if requested by command line
+	if conf.NoColor {
+		_ = os.Setenv("NO_COLOR", "1")
+	}
 
 	return conf, nil
 }
