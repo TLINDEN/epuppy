@@ -27,6 +27,66 @@ long run.
 - Showing the help
 ![Screenshot](https://github.com/TLINDEN/epuppy/blob/main/.github/assets/help.png)
 
+## Usage
+
+To read an ebook, just give a filename as argument to `epuppy`.
+
+Add  the option  `-s` to  store and  use a  previously stored  reading
+progress.
+
+Sometimes you may be unhappy with the colors. Depending on your
+terminal style you can enable dark mode with `-D`, light mode is the
+default. You can also configure custom colors in a config file in
+`$HOME/.config/epuppy/confit.toml`:
+
+```toml
+# color setting for dark mode
+colordark = {
+  body = "#ffffff",
+  title = "#7cfc00",
+  chapter = "#ffff00"
+}
+
+# color setting for light mode
+colorlight = {
+  body = "#000000",
+  title = "#8470ff",
+  chapter = "#00008b"
+}
+
+# always use dark mode
+dark = true
+```
+
+There are also cases where your current terminal just doesn't have the
+capabilites for this stuff. I stumbled upon such a case during an SSH
+session from my Android phone to a FreeBSD server. For this you can
+either just disable colors with `-N` or by setting the environment
+variable `$NO_COLOR` to 1. Or you can just dump the text of the ebook
+and pipe it to some pager, e.g.:
+
+```default
+epuppy -t someebook.epub | less
+```
+
+There are also a couple of debug options etc, all options:
+
+```default
+Usage epuppy [options] <epub file>
+
+Options:
+-D --dark                enable dark mode
+-s --store-progress      remember reading position
+-n --line-numbers        add line numbers
+-c --config <file>       use config <file>
+-t --txt                 dump readable content to STDOUT
+-x --xml                 dump source xml to STDOUT
+-N --no-color            disable colors (or use $NO_COLOR env var)
+-d --debug               enable debugging
+-h --help                show help message
+-v --version             show program version
+```
+
 ## Installation
 
 The tool does not have any dependencies.  Just download the binary for
