@@ -45,8 +45,11 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 			if err != nil {
 				return &bk, err
 			}
+		}
 
-			break
+		if mf.ID == "cover-image" {
+			bk.CoverFile = mf.Href
+			bk.CoverMediaType = mf.MediaType
 		}
 	}
 
@@ -61,13 +64,18 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}
+
+			bk.Content = append(bk.Content, ct)
+
+			if dumpxml {
+				fmt.Println(string(ct.XML))
+			}
 		}
 
-		bk.Content = append(bk.Content, ct)
-
-		if dumpxml {
-			fmt.Println(string(ct.XML))
+		if strings.Contains(file, bk.CoverFile) {
+			bk.CoverImage = content
 		}
+
 	}
 
 	if dumpxml {

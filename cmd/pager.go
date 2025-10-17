@@ -21,10 +21,13 @@ package cmd
 // https://github.com/charmbracelet/bubbletea/tree/main/examples/pager
 
 import (
+	"bytes"
 	"fmt"
+	"image"
 	"os"
 	"strings"
 
+	"github.com/blacktop/go-termimg"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -132,6 +135,7 @@ type Doc struct {
 	hideUi       bool
 	meta         *Meta
 	config       *Config
+	Cover        *termimg.ImageWidget
 
 	keys keyMap
 	help help.Model
@@ -220,7 +224,12 @@ func (m *Doc) Rewrap() {
 
 	// wrapping has changed, update viewport and line count
 	if content != "" {
-		m.viewport.SetContent(content)
+		if m.Cover != nil {
+			cover, _ := m.Cover.Render()
+			m.viewport.SetContent(cover + "\n\n" + content)
+		} else {
+			m.viewport.SetContent(content)
+		}
 		m.meta.lines = len(strings.Split(content, "\n"))
 	}
 
@@ -270,7 +279,15 @@ func max(a, b int) int {
 	return b
 }
 
-func Pager(conf *Config, title, message string) (int, error) {
+type Ebook struct {
+	Config    *Config
+	Title     string
+	Body      string
+	Cover     []byte
+	MediaType string
+}
+
+func Pager(book *Ebook) (int, error) {
 	width := 80
 	scrollto := 0
 
@@ -281,32 +298,44 @@ func Pager(conf *Config, title, message string) (int, error) {
 		}
 	}
 
-	if conf.StoreProgress {
-		scrollto = conf.InitialProgress
+	if book.Config.StoreProgress {
+		scrollto = book.Config.InitialProgress
 	}
 
-	if conf.LineNumbers {
+	if book.Config.LineNumbers {
 		catn := ""
-		for idx, line := range strings.Split(message, "\n") {
+		for idx, line := range strings.Split(book.Body, "\n") {
 			catn += fmt.Sprintf("%4d: %s\n", idx, line)
 		}
-		message = catn
+		book.Body = catn
 	}
 
 	meta := Meta{
 		initialprogress: scrollto,
-		lines:           len(strings.Split(message, "\n")),
+		lines:           len(strings.Split(book.Body, "\n")),
+	}
+
+	doc := Doc{
+		content:      book.Body,
+		title:        book.Title,
+		initialwidth: width,
+		meta:         &meta,
+		config:       book.Config,
+		keys:         keys,
+	}
+
+	if book.MediaType != "" && book.Config.ShowCover {
+		img, _, err := image.Decode(bytes.NewReader(book.Cover))
+		if err != nil {
+			return 0, fmt.Errorf("failed to load cover image: %w", err)
+		}
+
+		doc.Cover = termimg.NewImageWidgetFromImage(img)
+		doc.Cover.SetSize(width, width).SetProtocol(termimg.Auto)
 	}
 
 	p := tea.NewProgram(
-		Doc{
-			content:      message,
-			title:        title,
-			initialwidth: width,
-			meta:         &meta,
-			config:       conf,
-			keys:         keys,
-		},
+		doc,
 		tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
 		tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
 	)
@@ -315,7 +344,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 		return 0, fmt.Errorf("could not run pager: %w", err)
 	}
 
-	if conf.Debug {
+	if book.Config.Debug {
 		fmt.Printf("scrollto: %d, last: %d, diff: %d\n",
 			scrollto, meta.currentline, scrollto-meta.currentline)
 	}
