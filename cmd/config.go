@@ -76,7 +76,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 		if err != nil {
 			log.Fatalf("failed to print to output: %s", err)
 		}
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	// parse commandline flags
