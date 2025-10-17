@@ -272,7 +272,7 @@ func Pager(conf *Config, title, message string) (int, error) {
 	if conf.LineNumbers {
 		catn := ""
 		for idx, line := range strings.Split(message, "\n") {
-			catn += fmt.Sprintf("%d: %s\n", idx, line)
+			catn += fmt.Sprintf("%4d: %s\n", idx, line)
 		}
 		message = catn
 	}
