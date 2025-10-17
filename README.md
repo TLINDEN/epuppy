@@ -143,4 +143,4 @@ version 3.
 
 # Author
 
-Copyleft (c) 2024 Thomas von Dein
+Copyleft (c) 2025 Thomas von Dein
