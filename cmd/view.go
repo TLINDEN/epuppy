@@ -59,7 +59,7 @@ func ViewEpub(conf *Config) (int, error) {
 	}
 
 	if conf.Debug {
-		repr.Println(book.Opf)
+		repr.Println(book.Files())
 		repr.Println(book.Ncx)
 	}
 
@@ -82,6 +82,10 @@ func ViewEpub(conf *Config) (int, error) {
 
 	if conf.Dump {
 		return fmt.Println(buf.String())
+	}
+
+	if conf.Debug {
+		return 0, nil
 	}
 
 	return Pager(&Ebook{

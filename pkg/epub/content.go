@@ -31,9 +31,11 @@ func (c *Content) String(content []byte) error {
 		return err
 	}
 
-	// extract the title
-	for _, item := range xmlquery.Find(doc, "//title") {
-		c.Title = strings.TrimSpace(item.InnerText())
+	if c.Title == "" {
+		// extract the title
+		for _, item := range xmlquery.Find(doc, "//title") {
+			c.Title = strings.TrimSpace(item.InnerText())
+		}
 	}
 
 	// extract all  paragraphs, ignore any formatting  and re-fill the

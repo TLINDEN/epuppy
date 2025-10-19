@@ -53,29 +53,52 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 		}
 	}
 
-	for _, file := range bk.Files() {
-		content, err := bk.readBytes(file)
+	type section struct {
+		file, title string
+	}
+
+	sections := []section{}
+
+	if len(bk.Ncx.Points) > 0 {
+		for _, block := range bk.Ncx.Points {
+			sections = append(sections,
+				section{
+					file:  "OEBPS/" + block.Content.Src,
+					title: block.Text,
+				})
+		}
+	} else {
+		for _, file := range bk.Files() {
+			sections = append(sections,
+				section{
+					file: file,
+				})
+		}
+	}
+
+	for _, section := range sections {
+		content, err := bk.readBytes(section.file)
 		if err != nil {
 			return &bk, err
 		}
 
-		ct := Content{Src: file}
+		if strings.Contains(section.file, bk.CoverFile) {
+			bk.CoverImage = content
+		}
+
+		ct := Content{Src: section.file, Title: section.title}
+
 		if strings.Contains(string(content), "<?xml") {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}
-
-			bk.Content = append(bk.Content, ct)
-
-			if dumpxml {
-				fmt.Println(string(ct.XML))
-			}
 		}
 
-		if strings.Contains(file, bk.CoverFile) {
-			bk.CoverImage = content
+		if dumpxml {
+			fmt.Println(string(ct.XML))
 		}
 
+		bk.Content = append(bk.Content, ct)
 	}
 
 	if dumpxml {
