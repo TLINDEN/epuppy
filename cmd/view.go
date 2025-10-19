@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/alecthomas/repr"
 	"github.com/tlinden/epuppy/pkg/epub"
 )
 
@@ -57,6 +58,11 @@ func ViewEpub(conf *Config) (int, error) {
 		return 0, err
 	}
 
+	if conf.Debug {
+		repr.Println(book.Files())
+		repr.Println(book.Ncx)
+	}
+
 	buf := strings.Builder{}
 	head := strings.Builder{}
 
@@ -76,6 +82,10 @@ func ViewEpub(conf *Config) (int, error) {
 
 	if conf.Dump {
 		return fmt.Println(buf.String())
+	}
+
+	if conf.Debug {
+		return 0, nil
 	}
 
 	return Pager(&Ebook{
