@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	cleanentitles = regexp.MustCompile(`&.+;`)
+	cleanentitles = regexp.MustCompile(`&[a-z]+;`)
 	empty         = regexp.MustCompile(`(?s)^[\s ]*$`)
 	newlines      = regexp.MustCompile(`[\r\n]+`)
 )
@@ -28,7 +28,7 @@ func (c *Content) String(content []byte) error {
 		strings.NewReader(
 			cleanentitles.ReplaceAllString(string(content), " ")))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// extract the title
