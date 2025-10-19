@@ -11,12 +11,15 @@ import (
 
 // Book epub book
 type Book struct {
-	Ncx       Ncx       `json:"ncx"`
-	Opf       Opf       `json:"opf"`
-	Container Container `json:"-"`
-	Mimetype  string    `json:"-"`
-	Content   []Content
-	fd        *zip.ReadCloser
+	Ncx            Ncx       `json:"ncx"`
+	Opf            Opf       `json:"opf"`
+	Container      Container `json:"-"`
+	Mimetype       string    `json:"-"`
+	Content        []Content
+	fd             *zip.ReadCloser
+	CoverImage     []byte
+	CoverFile      string
+	CoverMediaType string
 }
 
 // Open open resource file

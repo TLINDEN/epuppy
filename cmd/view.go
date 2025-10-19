@@ -44,7 +44,11 @@ func ViewText(conf *Config) (int, error) {
 		return fmt.Println(string(data))
 	}
 
-	return Pager(conf, conf.Document, string(data))
+	return Pager(&Ebook{
+		Config: conf,
+		Title:  conf.Document,
+		Body:   string(data),
+	})
 }
 
 func ViewEpub(conf *Config) (int, error) {
@@ -74,11 +78,15 @@ func ViewEpub(conf *Config) (int, error) {
 		return fmt.Println(buf.String())
 	}
 
-	return Pager(conf, head.String(), buf.String())
+	return Pager(&Ebook{
+		Config:    conf,
+		Title:     head.String(),
+		Body:      buf.String(),
+		Cover:     book.CoverImage,
+		MediaType: book.CoverMediaType,
+	})
 }
 
-// FIXME:  since the  switch to  book.Files() in  epub.Open() this
-// returns invalid chapter numbering
 func fetchByContent(conf *Config, buf *strings.Builder, book *epub.Book) bool {
 	chapter := 1
 	var gotbody bool

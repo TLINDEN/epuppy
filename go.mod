@@ -41,14 +41,21 @@ require (
 
 require (
 	github.com/antchfx/xpath v1.3.5 // indirect
+	github.com/blacktop/go-termimg v0.1.20 // indirect
+	github.com/charmbracelet/x/mosaic v0.0.0-20250702191427-5bdfc8f2e4ff // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
+	github.com/makeworld-the-better-one/dither/v2 v2.4.0 // indirect
+	github.com/mattn/go-sixel v0.0.5 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/soniakeys/quant v1.0.0 // indirect
+	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/tools v0.37.0 // indirect
 )

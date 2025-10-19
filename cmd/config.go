@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	Version string = `v0.0.4`
+	Version string = `v0.0.5`
 	Usage   string = `This is epuppy, a terminal ui ebook viewer.
 
 Usage: epuppy [options] <epub file>
@@ -42,6 +42,7 @@ Options:
 -s --store-progress      remember reading position
 -n --line-numbers        add line numbers
 -c --config <file>       use config <file>
+-i --cover-image         display cover image
 -t --txt                 dump readable content to STDOUT
 -x --xml                 dump source xml to STDOUT
 -N --no-color            disable colors (or use $NO_COLOR env var)
@@ -63,6 +64,7 @@ type Config struct {
 	ColorDark       ColorSetting `koanf:"colordark"`      // comes from config file only
 	ColorLight      ColorSetting `koanf:"colorlight"`     // comes from config file only
 	ShowHelp        bool         `koanf:"help"`
+	ShowCover       bool         `koanf:"cover-image"` // -i
 	Colors          Colors       // generated from user config file or internal defaults, respects dark mode
 	Document        string
 	InitialProgress int // lines
@@ -89,6 +91,7 @@ func InitConfig(output io.Writer) (*Config, error) {
 	flagset.BoolP("txt", "t", false, "dump readable content to STDOUT")
 	flagset.BoolP("xml", "x", false, "dump xml to STDOUT")
 	flagset.BoolP("no-color", "N", false, "disable colors")
+	flagset.BoolP("cover-image", "i", false, "show cover image")
 	flagset.BoolP("help", "h", false, "show help")
 	flagset.StringP("config", "c", "", "read config from file")
 
