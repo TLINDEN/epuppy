@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/alecthomas/repr"
 )
 
 // Open open a epub file
@@ -88,7 +90,7 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 
 		ct := Content{Src: section.file, Title: section.title}
 
-		if strings.Contains(string(content), "<?xml") {
+		if strings.Contains(string(content), "<?xml") || strings.Contains(string(content), "<!DOCTYPE") {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}
@@ -102,6 +104,7 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 	}
 
 	if dumpxml {
+		repr.Println(sections)
 		os.Exit(0)
 	}
 
