@@ -87,7 +87,7 @@ func ViewEpub(conf *Config) (int, error) {
 		return fmt.Println(buf.String())
 	}
 
-	if conf.Debug {
+	if conf.Debug || conf.XML {
 		return 0, nil
 	}
 

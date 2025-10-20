@@ -26,6 +26,7 @@ type Book struct {
 	CoverFile      string
 	CoverMediaType string
 	Sections       []Section
+	dumpxml        bool
 }
 
 // Open open resource file
