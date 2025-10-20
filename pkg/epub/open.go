@@ -5,13 +5,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
-
-	"github.com/alecthomas/repr"
 )
 
 // Open open a epub file
 func Open(fn string, dumpxml bool) (*Book, error) {
+	// to find content
+	types := regexp.MustCompile(`application/(xml|html|xhtml|htm)`)
+
+	// cleanup regexes
+	deanchor := regexp.MustCompile(`#.*$`)
+	cleanext := regexp.MustCompile(`^\.`)
+
 	fd, err := zip.OpenReader(fn)
 	if err != nil {
 		return nil, err
@@ -31,16 +38,19 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 
 	bk.Mimetype = string(mt)
 
+	// contains the root path
 	err = bk.readXML("META-INF/container.xml", &bk.Container)
 	if err != nil {
 		return &bk, err
 	}
 
+	// contains the OPF data
 	err = bk.readXML(bk.Container.Rootfile.Path, &bk.Opf)
 	if err != nil {
 		return &bk, err
 	}
 
+	// look for TOC (might be incomplete, see below!)
 	for _, mf := range bk.Opf.Manifest {
 		if mf.ID == bk.Opf.Spine.Toc {
 			err = bk.readXML(bk.filename(mf.Href), &bk.Ncx)
@@ -55,42 +65,97 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 		}
 	}
 
-	type section struct {
-		file, title string
+	// to store our final content sections
+	sections := []Section{}
+
+	// count the content items in the raw manifest
+	var xmlsmanifest int
+	for _, item := range bk.Opf.Manifest {
+		if types.MatchString(item.MediaType) {
+			xmlsmanifest++
+		}
 	}
 
-	sections := []section{}
-
+	// we have ncx points from the TOC, try this
 	if len(bk.Ncx.Points) > 0 {
 		for _, block := range bk.Ncx.Points {
-			sections = append(sections,
-				section{
-					file:  "OEBPS/" + block.Content.Src,
-					title: block.Text,
-				})
+			sect := Section{
+				File:  "OEBPS/" + block.Content.Src,
+				Title: block.Text,
+			}
+
+			srcfile := deanchor.ReplaceAllString(block.Content.Src, "")
+
+			for _, file := range bk.Files() {
+				if strings.Contains(file, srcfile) {
+					sect.File = file
+					sect.MediaType = "application/" + cleanext.ReplaceAllString(filepath.Ext(file), "")
+					break
+				}
+			}
+
+			sections = append(sections, sect)
+		}
+
+		if len(sections) < xmlsmanifest {
+			// TOC  was incomplete, restart  from scratch but  use the
+			// OPF Manifest directly
+
+			sections = []Section{}
+
+			for _, item := range bk.Opf.Manifest {
+				if types.MatchString(item.MediaType) {
+					sect := Section{
+						File:      "OEBPS/" + item.Href,
+						MediaType: item.MediaType,
+					}
+
+					srcfile := deanchor.ReplaceAllString(item.Href, "")
+
+					for _, file := range bk.Files() {
+						if strings.Contains(file, srcfile) {
+							sect.File = file
+							break
+						}
+					}
+
+					sections = append(sections, sect)
+				}
+			}
 		}
 	} else {
+		// no TOC, just pull in the files directly
 		for _, file := range bk.Files() {
 			sections = append(sections,
-				section{
-					file: file,
+				Section{
+					File:      file,
+					MediaType: "application/" + cleanext.ReplaceAllString(filepath.Ext(file), ""),
 				})
 		}
 	}
 
+	// final sections, store
+	bk.Sections = sections
+
+	// to  determine content type, we  could use the MediaType  of the
+	// items, but unfortunately we do not have them in every case
+	//xmltype := regexp.MustCompile(`(xml|DOCTYPE|xhtml)`)
+
+	// now read in the actual xml contents
 	for _, section := range sections {
-		content, err := bk.readBytes(section.file)
+		content, err := bk.readBytes(section.File)
 		if err != nil {
 			return &bk, err
 		}
 
-		if strings.Contains(section.file, bk.CoverFile) {
+		if strings.Contains(section.File, bk.CoverFile) {
 			bk.CoverImage = content
 		}
 
-		ct := Content{Src: section.file, Title: section.title}
+		ct := Content{Src: section.File, Title: section.Title}
 
-		if strings.Contains(string(content), "<?xml") || strings.Contains(string(content), "<!DOCTYPE") {
+		//if xmltype.MatchString(string(content)) {
+		if types.MatchString(section.MediaType) {
 			if err := ct.String(content); err != nil {
 				return &bk, err
 			}
@@ -104,7 +169,6 @@ func Open(fn string, dumpxml bool) (*Book, error) {
 	}
 
 	if dumpxml {
-		repr.Println(sections)
 		os.Exit(0)
 	}
 
