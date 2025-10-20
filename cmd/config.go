@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	Version string = `v0.0.5`
+	Version string = `v0.0.6`
 	Usage   string = `This is epuppy, a terminal ui ebook viewer.
 
 Usage: epuppy [options] <epub file>

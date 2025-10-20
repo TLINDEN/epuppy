@@ -9,6 +9,11 @@ import (
 	"path"
 )
 
+// a section in the book
+type Section struct {
+	File, Title, MediaType string
+}
+
 // Book epub book
 type Book struct {
 	Ncx            Ncx       `json:"ncx"`
@@ -20,6 +25,8 @@ type Book struct {
 	CoverImage     []byte
 	CoverFile      string
 	CoverMediaType string
+	Sections       []Section
+	dumpxml        bool
 }
 
 // Open open resource file
