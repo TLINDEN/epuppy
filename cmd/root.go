@@ -59,7 +59,21 @@ func Execute(output io.Writer) int {
 		}
 	}
 
-	progress, err := View(conf)
+	ebook, err := Prepare(conf)
+	if err != nil {
+		return Die(err)
+	}
+
+	if conf.Dump {
+		fmt.Println(ebook.Body)
+		return 0
+	}
+
+	if conf.Debug || conf.XML {
+		return 0
+	}
+
+	progress, err := Pager(ebook)
 	if err != nil {
 		return Die(err)
 	}

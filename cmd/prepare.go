@@ -26,36 +26,32 @@ import (
 	"github.com/tlinden/epuppy/pkg/epub"
 )
 
-func View(conf *Config) (int, error) {
+func Prepare(conf *Config) (*Ebook, error) {
 	switch filepath.Ext(conf.Document) {
 	case ".epub":
-		return ViewEpub(conf)
+		return PrepareEpub(conf)
 	default:
-		return ViewText(conf)
+		return PrepareText(conf)
 	}
 }
 
-func ViewText(conf *Config) (int, error) {
+func PrepareText(conf *Config) (*Ebook, error) {
 	data, err := os.ReadFile(conf.Document)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	if conf.Dump {
-		return fmt.Println(string(data))
-	}
-
-	return Pager(&Ebook{
+	return &Ebook{
 		Config: conf,
 		Title:  conf.Document,
 		Body:   string(data),
-	})
+	}, nil
 }
 
-func ViewEpub(conf *Config) (int, error) {
+func PrepareEpub(conf *Config) (*Ebook, error) {
 	book, err := epub.Open(conf.Document, conf.XML)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if conf.Debug {
@@ -83,21 +79,13 @@ func ViewEpub(conf *Config) (int, error) {
 
 	fetchByContent(conf, &buf, book)
 
-	if conf.Dump {
-		return fmt.Println(buf.String())
-	}
-
-	if conf.Debug || conf.XML {
-		return 0, nil
-	}
-
-	return Pager(&Ebook{
+	return &Ebook{
 		Config:    conf,
 		Title:     head.String(),
 		Body:      buf.String(),
 		Cover:     book.CoverImage,
 		MediaType: book.CoverMediaType,
-	})
+	}, nil
 }
 
 func fetchByContent(conf *Config, buf *strings.Builder, book *epub.Book) bool {
