@@ -10,7 +10,8 @@ import (
 var (
 	cleanentitles = regexp.MustCompile(`&[a-z]+;`)
 	empty         = regexp.MustCompile(`(?s)^[\s ]*$`)
-	newlines      = regexp.MustCompile(`[\r\n]+`)
+	newlines      = regexp.MustCompile(`[\r\n\s]+`)
+	cleansvg      = regexp.MustCompile(`(<svg.+</svg>|<!\[CDATA\[.+\]\]>)`)
 	cleanmarkup   = regexp.MustCompile(`<[^<>]+>`)
 )
 
@@ -27,7 +28,8 @@ type Content struct {
 func (c *Content) String(content []byte) error {
 	doc, err := xmlquery.Parse(
 		strings.NewReader(
-			cleanentitles.ReplaceAllString(string(content), " ")))
+			cleansvg.ReplaceAllString(
+				cleanentitles.ReplaceAllString(string(content), " "), "")))
 	if err != nil {
 		return err
 	}
