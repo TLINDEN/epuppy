@@ -99,7 +99,12 @@ your platform from the releases page and you're good to go.
 
 ### Installation using a pre-compiled binary
 
-Go to the [latest release page](https://github.com/TLINDEN/epuppy/releases/latest)
+You can use [stew](https://github.com/marwanhawari/stew) to install epuppy:
+```default
+stew install tlinden/epuppy
+```
+
+Or go to the [latest release page](https://github.com/TLINDEN/epuppy/releases/latest)
 and look for your OS and platform. There are two options to install the binary:
 
 Directly     download     the     binary    for     your     platform,
