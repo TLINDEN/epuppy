@@ -19,7 +19,7 @@ package main
 import (
 	"os"
 
-	"github.com/tlinden/epuppy/cmd"
+	"codeberg.org/scip/epuppy/cmd"
 )
 
 func main() {

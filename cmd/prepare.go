@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"codeberg.org/scip/epuppy/pkg/epub"
 	"github.com/alecthomas/repr"
-	"github.com/tlinden/epuppy/pkg/epub"
 )
 
 func Prepare(conf *Config) (*Ebook, error) {

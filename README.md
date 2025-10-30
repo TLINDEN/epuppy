@@ -1,6 +1,6 @@
-[![Actions](https://github.com/tlinden/epuppy/actions/workflows/ci.yaml/badge.svg)](https://github.com/tlinden/epuppy/actions)
-[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/tlinden/epuppy/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tlinden/epuppy)](https://goreportcard.com/report/github.com/tlinden/epuppy)
+[![status-badge](https://ci.codeberg.org/api/badges/15473/status.svg?branch=woodpecker)](https://ci.codeberg.org/repos/15473)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://codeberg.org/scip/epuppy/raw/branch/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/codeberg.org/scip/epuppy)](https://goreportcard.com/report/codeberg.org/scip/epuppy)
 
 
 # epuppy - terminal epub reader
@@ -21,16 +21,16 @@ long run.
 ## Screenshots
 
 - Viewing an ebook in dark mode
-![Screenshot](https://github.com/TLINDEN/epuppy/blob/main/.github/assets/darkmode.png)
+![Screenshot](https://codeberg.org/scip/epuppy/raw/branch/main/.codeberg/assets/darkmode.png)
 
 - Viewing an ebook in light mode
-![Screenshot](https://github.com/TLINDEN/epuppy/blob/main/.github/assets/light.png)
+![Screenshot](https://codeberg.org/scip/epuppy/raw/branch/main/.codeberg/assets/light.png)
 
 - You can interactively adjust text width
-![Screenshot](https://github.com/TLINDEN/epuppy/blob/main/.github/assets/margin.png)
+![Screenshot](https://codeberg.org/scip/epuppy/raw/branch/main/.codeberg/assets/margin.png)
 
 - Showing the help
-![Screenshot](https://github.com/TLINDEN/epuppy/blob/main/.github/assets/help.png)
+![Screenshot](https://codeberg.org/scip/epuppy/raw/branch/main/.codeberg/assets/help.png)
 
 ## Usage
 
@@ -101,10 +101,10 @@ your platform from the releases page and you're good to go.
 
 You can use [stew](https://github.com/marwanhawari/stew) to install epuppy:
 ```default
-stew install tlinden/epuppy
+stew install https://codeberg.org/scip/epuppy
 ```
 
-Or go to the [latest release page](https://github.com/TLINDEN/epuppy/releases/latest)
+Or go to the [latest release page](https://codeberg.org/scip/epuppy/releases/latest)
 and look for your OS and platform. There are two options to install the binary:
 
 Directly     download     the     binary    for     your     platform,
@@ -144,7 +144,7 @@ sudo make install
 
 # Report bugs
 
-[Please open an issue](https://github.com/TLINDEN/epuppy/issues). Thanks!
+[Please open an issue](https://codeberg.org/scip/epuppy/issues). Thanks!
 
 # License
 

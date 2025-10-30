@@ -1,4 +1,4 @@
-module github.com/tlinden/epuppy
+module codeberg.org/scip/epuppy
 
 go 1.24.0
 
